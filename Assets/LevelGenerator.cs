@@ -4,15 +4,40 @@ using UnityEngine;
 
 public class LevelGenerator : MonoBehaviour
 {
-
-	public int height, width;
-	public int lineCount;
-	public Vector2 range;
+	public int pointCount;
+	public int range;
 	public int extra = 1;
 	public Line[] lines = { };
-	GameObject tile;
-
+	GameObject tile, point;
+	public int resolution = 1000;
+	public int linewidth = 5;
+	public int[,] layout;
+	public Vector2[] points;
 	public float tilesize = 1;
+
+	public void GenPoints()
+	{
+		points = new Vector2[pointCount];
+		points[0] = new Vector2(10, 10);
+		for (int i = 1; i < pointCount; i++)
+		{
+			points[i] = new Vector2(Random.Range(0, range), Random.Range(0, range));
+
+		}
+	}
+	public void GenLines()
+	{
+		lines = new Line[pointCount - 1 + extra];
+
+		for (int i = 0; i < pointCount - 1; i++)
+		{
+			lines[i] = new Line(points[i], points[i + 1]);
+		}
+		for (int i = 0; i < extra; i++)
+		{
+			lines[pointCount - 1 + i] = new Line(points[Random.Range(0, pointCount - 1)], points[Random.Range(0, pointCount - 1)]);
+		}
+	}
 	public void Gen()
 	{
 		Transform t = transform.Find("Tiles");
@@ -25,51 +50,121 @@ public class LevelGenerator : MonoBehaviour
 		tiles.transform.parent = gameObject.transform;
 		Debug.Log("Generate");
 
-		lines = new Line[lineCount + extra];
-		Vector2 start = new Vector2(0, 0),
-		p0 = new Vector2(Random.Range(range.x, range.y), Random.Range(range.x, range.y)),
-		p1;
+		GenPoints();
+		for (int p = 0; p < points.Length; p++)
+		{
+			Instantiate(point, new Vector3(points[p].x, points[p].y, 0), Quaternion.identity, tiles.transform);
+		}
+		GenLines();
 
-		for (int i = 0; i < lineCount; i++)
-		{
-			p1 = new Vector2(p0.x + Random.Range(range.x, range.y), p0.y + Random.Range(range.x, range.y));
-			lines[i] = new Line(p0, p1);
-			p0 = p1;
-		}
-		for (int i = 0; i < extra; i++)
-		{
-			p0 = lines[Random.Range(0, lineCount - 1)].p0;
-			p1 = lines[Random.Range(0, lineCount - 1)].p0;
-			lines[lineCount + i] = new Line(p0, p1);
-		}
+
+
+
+		print(range * resolution);
+		layout = new int[range * resolution, range * resolution];
 
 		for (int l = 0; l < lines.Length; l++)
 		{
 			Line line = lines[l];
-			Vector2 larger, smaller, dif, tilePos;
+			float b = line.magnitude,
+			d = line.distance,
+			slope = line.slope;
+			Vector2 pslope = line.difference.normalized;
+			for (float step = 0; step <= d * resolution; step += 0.1f)
+			{
+				float a = d == 0 ? 0.0f : step / d;
+				Vector2 p = line.GetPoint(a);
+				layout[(int)(p.x * resolution), (int)(p.y * resolution)] = 1;
 
-			if (line.p0.x > line.p1.x)
-			{
-				larger = line.p0;
-				smaller = line.p1;
+				for (int i = -linewidth; i < linewidth; i++)
+				{
+					//negative inverse of slope
+					Vector2 v = PointOnSlope(p, i * 0.01f, -1 / slope);
+					if (v.x > 0 && v.x < range && v.y > 0 && v.y < range)
+					{
+						layout[(int)(v.x * resolution), (int)(v.y * resolution)] = 1;
+					}
+					else
+					{
+						Debug.Log(v);
+					}
+
+
+				}
 			}
-			else
+			Debug.Log(layout);
+		}
+		for (int x = 0; x < range * resolution; x++)
+		{
+			for (int y = 0; y < range * resolution; y++)
 			{
-				larger = line.p1;
-				smaller = line.p0;
+				if (layout[x, y] == 1)
+				{
+					Instantiate(tile, new Vector3((float)x / (float)resolution, (float)y / (float)resolution, 0), Quaternion.identity, tiles.transform);
+				}
 			}
-			dif = larger - smaller;
-			for (int x = 0; x < (int)dif.x; x++)
-			{
-				tilePos = line.GetPoint(x / dif.x);
-				Instantiate(tile, new Vector3(tilePos.x, tilePos.y, 0), Quaternion.identity, tiles.transform);
-			}
+
+		}
+	}
+	void OnAwake()
+	{
+		Load();
+		Gen();
+
+	}
+	Vector2 PointOnSlope(Vector2 start, float distance, float slope)
+	{
+		Vector2 a, b;
+		if (slope == 0)
+		{
+			a.x = start.x + distance;
+			a.y = start.y;
+
+			b.x = start.x - distance;
+			b.y = start.y;
 		}
 
+		else if (slope == Mathf.Infinity)
+		{
+			a.x = start.x;
+			a.y = start.y + distance;
+
+			b.x = start.x;
+			b.y = start.y - distance;
+
+		}
+		else
+		{
+			float dx = (distance / Mathf.Sqrt(1 + (slope * slope)));
+			float dy = slope * dx;
+			a.x = start.x + dx;
+			a.y = start.y + dy;
+
+			b.x = start.x - dx;
+			b.y = start.y - dy;
+		}
+		if (distance > 0)
+		{
+			return a;
+		}
+		else
+		{
+			return b;
+		}
+
+	}
+	private float distance(Vector2 a, Vector2 b)
+	{
+		return Mathf.Sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)));
+	}
+	public int[,] GetLayout()
+	{
+		Debug.Log(layout);
+		return layout;
 	}
 	public void Load()
 	{
 		tile = Resources.Load<GameObject>("tile");
+		point = Resources.Load<GameObject>("Point");
 	}
-
 }

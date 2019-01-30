@@ -7,6 +7,9 @@ public class GameManager : MonoBehaviour
 	public static GameManager gm;
 	public GameObject canvas;
 	public GameObject player;
+	public Level level;
+
+	public LevelGenerator levelGenerator;
 	void Awake()
 	{
 		//create static, non-level dependent game controller
@@ -17,7 +20,13 @@ public class GameManager : MonoBehaviour
 		DontDestroyOnLoad(gameObject);
 
 	}
-
+	void Start()
+	{
+		levelGenerator.Load();
+		levelGenerator.Gen();
+		player.transform.position = new Vector3(levelGenerator.points[0].x, levelGenerator.points[0].y, 0);
+		player.SetActive(true);
+	}
 	public void Win()
 	{
 		Debug.Log("You WIN!!!!");
@@ -34,4 +43,6 @@ public class GameManager : MonoBehaviour
 		Debug.Log("Quit");
 		Application.Quit();
 	}
+
+
 }
