@@ -12,12 +12,13 @@ public class PlayerController : MonoBehaviour
 	public LevelGenerator levelGen;
 	public Camera cam;
 	GameObject fTile;
-	GameObject[] fTiles;
+	GameObject[,] fTiles;
 	List<GameObject> fTileList = new List<GameObject>();
+	GameObject flashlight;
 	void Awake()
 	{
 		fTile = Resources.Load<GameObject>("flashlight");
-
+		flashlight = transform.Find("flashlight").gameObject;
 		layout = levelGen.layout;
 
 	}
@@ -47,15 +48,42 @@ public class PlayerController : MonoBehaviour
 		transform.position += add;
 
 		rot = (rot + (Time.deltaTime * Mathf.Clamp(input.magnitude, 0, 1)) * 20);
-		transform.rotation = Quaternion.Euler(0, 0, Mathf.Sin(rot) * 23);
-		transform.localScale = new Vector3(Mathf.Abs(Mathf.Cos(rot)) * 0.3f + 0.7f, 1, 1);
+		//transform.rotation = Quaternion.Euler(0, 0, Mathf.Sin(rot) * 23);
+		//transform.localScale = new Vector3(Mathf.Abs(Mathf.Cos(rot)) * 0.3f + 0.7f, 1, 1);
 
-		for (int i = 0; i < fTiles.Length; i++)
+		for (int x = 0; x < fTiles.GetLength(1)/2; x++)
 		{
-			GameObject b = fTiles[i];
-
-			b.SetActive(layout[(int)(b.transform.position.x * levelGen.resolution), (int)(b.transform.position.y * levelGen.resolution)] == 1);
+			bool a = true;
+			for (int y = 0; y < fTiles.GetLength(0); y++)
+			{
+			
+				GameObject b = fTiles[y,x];
+				if(b == null) continue; 
+				if(a) {
+					a = layout[(int)(b.transform.position.x * levelGen.resolution), (int)(b.transform.position.y * levelGen.resolution)] == 1;
+				}
+				b.SetActive(a);
+			}
 		}
+		for (int x = fTiles.GetLength(1)/2; x < fTiles.GetLength(1)/2; x++)
+		{
+			bool a = true;
+			for (int y = 0; y < fTiles.GetLength(0); y++)
+			{
+			
+				GameObject b = fTiles[y,x];
+				if(b == null) continue; 
+				if(a) {
+					a = layout[(int)(b.transform.position.x * levelGen.resolution), (int)(b.transform.position.y * levelGen.resolution)] == 1;
+				}
+				b.SetActive(a);
+			}
+		}
+		Vector3 diff = cam.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+         diff.Normalize();
+ 
+         float rot_z = Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg;
+         flashlight.transform.rotation = Quaternion.Euler(0f, 0f, rot_z - 90);
 		/* 
 		Vector2 pos = transform.position - Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		transform.rotation = Quaternion.Euler(0, 0, -Mathf.Atan2(pos.x, pos.y) * (180.0f / Mathf.PI) + 270);
@@ -71,35 +99,30 @@ public class PlayerController : MonoBehaviour
 	{
 
 	}
-
+	
 	void BuildFlashlight()
 	{
 
 		Debug.Log("BUILD");
-		int radius = 10,
+		int radius = 20,
 		count = radius * radius;
+		fTiles = new GameObject[radius,radius*2];
 		for (int y = 0; y < radius; y++)
 		{
-			for (int x = 0; x < radius; x++)
+			for (int x = -radius; x < radius; x++)
 			{
-				if (x < y)
+				if (Mathf.Abs(x) < y)
 				{
 
 					// (x, y), (x, -y), (-x , y), (-x, -y) are in the circle
-					GameObject[] a = {
-						Instantiate(fTile, transform, false),
-						Instantiate(fTile, transform, false)
-					};
-					a[0].transform.localPosition = new Vector3((float)x / 10f, (float)y / 10f, 0);
-					a[1].transform.localPosition = new Vector3((float)x / -10f, (float)y / 10f, 0);
-					for (int i = 0; i < 2; i++)
-					{
-						GameObject b = a[i];
-						fTileList.Add(b);
-					}
+					
+					GameObject b = Instantiate(fTile, flashlight.transform, false);
+					
+					b.transform.localPosition = new Vector3((float)x / 10f, (float)y / 10f, 0);
+					fTiles[y, radius+x] = b;
+					
 				}
 			}
 		}
-		fTiles = fTileList.ToArray();
 	}
 }

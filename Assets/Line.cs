@@ -69,4 +69,7 @@ public class Line
 	{
 		get { return difference.normalized; }
 	}
+	public static Vector2[] DrawLine(Vector2 a, Vector2 b) {
+		//Vector2[] c;
+	}
 }
