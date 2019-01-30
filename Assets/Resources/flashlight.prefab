@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4165071494833478}
   - component: {fileID: 212221459966250968}
   m_Layer: 0
-  m_Name: Tile
+  m_Name: flashlight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -55,7 +55,7 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: 81ed9a86d499873488be9cd1fe434906, type: 2}
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
