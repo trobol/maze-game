@@ -11,10 +11,11 @@ public class LevelGenerator : MonoBehaviour
 	GameObject tile, point, endTile;
 	public int resolution = 1000;
 	public int linewidth = 5;
-	public int[,] layout;
-	public Level[] levels;
+	public bool[,] layout;
 	public Vector2 endPoint;
 	public Vector2[] points;
+	public int levelCount;
+	public Level[] levels;
 
 	public void GenPoints()
 	{
@@ -59,8 +60,8 @@ public class LevelGenerator : MonoBehaviour
 			Instantiate(point, new Vector3(points[p].x, points[p].y, 0), Quaternion.identity, tiles.transform);
 		}
 		GenLines();
-	
-		layout = new int[range * resolution, range * resolution];
+
+		layout = new bool[range * resolution, range * resolution];
 
 		for (int l = 0; l < lines.Length; l++)
 		{
@@ -72,7 +73,7 @@ public class LevelGenerator : MonoBehaviour
 			{
 				float a = d == 0 ? 0.0f : step / d;
 				Vector2 p = line.GetPoint(a);
-				layout[(int)(p.x * resolution), (int)(p.y * resolution)] = 1;
+				layout[(int)(p.x * resolution), (int)(p.y * resolution)] = true;
 
 				for (int i = -linewidth; i < linewidth; i++)
 				{
@@ -80,7 +81,7 @@ public class LevelGenerator : MonoBehaviour
 					Vector2 v = PointOnSlope(p, i * 0.01f, -1 / slope);
 					if (v.x > 0 && v.x < range && v.y > 0 && v.y < range)
 					{
-						layout[(int)(v.x * resolution), (int)(v.y * resolution)] = 1;
+						layout[(int)(v.x * resolution), (int)(v.y * resolution)] = true;
 					}
 					else
 					{
@@ -96,7 +97,7 @@ public class LevelGenerator : MonoBehaviour
 		{
 			for (int y = 0; y < range * resolution; y++)
 			{
-				if (layout[x, y] == 1)
+				if (layout[x, y])
 				{
 					Instantiate(tile, new Vector3((float)x / (float)resolution, (float)y / (float)resolution, 0), Quaternion.identity, tiles.transform);
 				}
@@ -155,7 +156,7 @@ public class LevelGenerator : MonoBehaviour
 	{
 		return Mathf.Sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)));
 	}
-	public int[,] GetLayout()
+	public bool[,] GetLayout()
 	{
 		Debug.Log(layout);
 		return layout;

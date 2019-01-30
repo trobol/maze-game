@@ -53,3 +53,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvas: {fileID: 0}
   player: {fileID: 0}
+  levelGenerator: {fileID: 0}
