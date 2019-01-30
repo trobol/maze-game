@@ -8,10 +8,12 @@ public class LevelGenerator : MonoBehaviour
 	public int range;
 	public int extra = 1;
 	public Line[] lines = { };
-	GameObject tile, point;
+	GameObject tile, point, endTile;
 	public int resolution = 1000;
 	public int linewidth = 5;
 	public int[,] layout;
+	public Level[] levels;
+	public Vector2 endPoint;
 	public Vector2[] points;
 	public float tilesize = 1;
 
@@ -24,6 +26,7 @@ public class LevelGenerator : MonoBehaviour
 			points[i] = new Vector2(Random.Range(0, range), Random.Range(0, range));
 
 		}
+		endPoint = points[pointCount - 1];
 	}
 	public void GenLines()
 	{
@@ -92,15 +95,15 @@ public class LevelGenerator : MonoBehaviour
 
 				}
 			}
-			Debug.Log(layout);
 		}
+		Instantiate(endTile, new Vector3(endPoint.x, endPoint.y, 0), Quaternion.identity, tiles.transform);
 		for (int x = 0; x < range * resolution; x++)
 		{
 			for (int y = 0; y < range * resolution; y++)
 			{
 				if (layout[x, y] == 1)
 				{
-					Instantiate(tile, new Vector3((float)x / (float)resolution, (float)y / (float)resolution, 0), Quaternion.identity, tiles.transform);
+					//Instantiate(tile, new Vector3((float)x / (float)resolution, (float)y / (float)resolution, 0), Quaternion.identity, tiles.transform);
 				}
 			}
 
@@ -166,5 +169,6 @@ public class LevelGenerator : MonoBehaviour
 	{
 		tile = Resources.Load<GameObject>("tile");
 		point = Resources.Load<GameObject>("Point");
+		endTile = Resources.Load<GameObject>("End");
 	}
 }
